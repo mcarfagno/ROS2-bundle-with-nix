@@ -90,4 +90,11 @@ One important detail: While the bundle contains all the software, it still execu
 
 ## One more thing!
 
-You don't have to bundle this yourself, Github CI can do it for you! Check out the Action artifacts TODO: link
+You don't have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build/yml) can do it for you! Check out the Action artifacts!
+
+<figure>
+  <img src="img/action.png" width="500" />
+  <figcaption>GH Action artifacts</figcaption>
+</figure>
+
+It's ultra fast thanks to the [cachix](https://app.cachix.org/cache/ros) cache!
