@@ -1,4 +1,4 @@
-name: "Build Robot Fleet"
+name: "Build Workspace"
 on:
   push:
     tags:
@@ -23,7 +23,7 @@ jobs:
         run: mkdir deploy_artifacts
 
       - name: Bundle ROS2 Worksace
-        run: nix bundle .#ros2-bundle --out deploy_artifacts/
+        run: nix bundle .#ros2-bundle -o deploy_artifacts/ros2-bundle-arx
 
       - name: Upload Binaries
         uses: actions/upload-artifact@v4
