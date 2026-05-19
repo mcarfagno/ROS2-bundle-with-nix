@@ -1,0 +1,32 @@
+name: "Build Robot Fleet"
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-and-bundle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v25
+
+      - name: Use ROS Cache
+        uses: cachix/cachix-action@v15
+        with:
+          name: ros
+
+      - name: Create Artifact Directory
+        run: mkdir deploy_artifacts
+
+      - name: Bundle ROS2 Worksace
+        run: nix bundle .#ros2-bundle --out deploy_artifacts/
+
+      - name: Upload Binaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: ros2-fleet-bundles
+          path: deploy_artifacts/
