@@ -35,7 +35,7 @@ ros2 run my_awesome_package talker
 ros2 run my_awesome_package listener
 ```
 
-You don't have to run these to bundle your applications, just follow if you are curious how to manage the whole compiled workspace as a nix package stored on your machine.
+**You don't have follow the next steps to bundle your ROS project**, feel free to skip to [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
 Nix can also build the whole ros project as a Nix Package!
 ```bash
@@ -56,18 +56,23 @@ nix build .#ros2-workspace
 ./result/bin/ros2 run my_awesome_package talker
 ```
 
-Now don't try just coping this on your robot just yet! this is all linked to the `/nix/store`!
+> [!WARNING]
+> Now don't try just coping this on your robot just yet! The result has the dependencies linked to the `/nix/store`!
 
-(If your robot actually does have Nix installed, we can sync the packaged workspace and all its dependencies securely over SSH):
+If your robot actually does have Nix installed, we can sync the packaged workspace and all its dependencies securely over SSH:
 ```bash
 nix copy .#ros2-bundle --to ssh://nuc@192.168.1.X
 ```
+
+> [!TIP]
+> Why would you care about this in the first place? This is your gateway to instantaneous rollbacks, as any content change in `#ros2-bundle` creates a new unique hash in the nix store that you can track!
 
 But let's not get sidetracked...
 
 ## Deploying the standalone to a robot
 
-*NOTE: the example flake does not include cross-compilation, so the resulting binary will only work with the same architecture as host machine! I will try expanding on that in another tutorial.*
+> [!IMPORTANT]
+> the example flake does not include cross-compilation, so the resulting binary will only work with the same architecture as host machine! I will try expanding on that in another tutorial.
 
 So, your robot's stack is bulletproof and you want to deploy it as a standalone executable because you don't want Nix (or ROS, or Docker) installed on your robot. Nix still has your back!
 
