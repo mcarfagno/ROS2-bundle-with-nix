@@ -3,6 +3,9 @@
 
 Highly recommended introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), because I assume you have already nix installed in your machine.
 
+> [!TIP]
+> Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), unless you fancy compiling everything from scratch.
+
 This contains an oversimplified workspace with:
 - A talker/listener package
 - A custom interfaces package
@@ -14,6 +17,8 @@ The [flake](./flake.nix) is commented to help you follow along, it defines:
 - **default dev shell**: a hermetic terminal environment with all ROS 2 build tools and dependencies.
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
 - **ros2-bundle**: a portable, self-extracting executable wrapper to bring up the whole stack.
+
+Mandatory thanks to [lopsided98/nix-ros-overlay](https://github.com/lopsided98/nix-ros-overlay), which is the project that actually provides everything required to make ROS 2 work flawlessly with Nix. The maintainers deserve all the praise for making this possible.
 
 ## Local Development
 
