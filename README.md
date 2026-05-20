@@ -105,11 +105,13 @@ One important detail: While the bundle contains all the software, it still execu
 
 ## One more thing!
 
-You don't have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build.yml)! Check out the Action artifacts!
+If you are not impressed so far with Nix, here one last trick.
 
+You don't even have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build.yml)!
+
+Check out this repo's [Action artifacts](https://github.com/mcarfagno/ROS2-bundle-with-nix/actions/runs/26124192819), you can download and run the bundled application yourself on your x86 Linux machine!
 <figure>
   <img src="img/action.png" width="500" />
-  <figcaption>GH Action artifacts</figcaption>
 </figure>
 
 It's ultra fast thanks to the [cachix](https://app.cachix.org/cache/ros) cache!
