@@ -1,15 +1,15 @@
 
 # ROS2 Bundle with Nix
 
-Highly recommended introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/)
+Highly recommended introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/) !
 This contains an oversimplified workspace with:
 - A talker/listener package
 - A custom interfaces package
 - A bringup package
 
-We will use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh in the mix as extra complexity because why not.
+We will use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
 
-The flake defines:
+The [flake](./flake.nix) is commented to help you follow along, it defines:
 - **default dev shell**: a hermetic terminal environment with all ROS 2 build tools and dependencies.
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
 - **ros2-bundle**: a portable, self-extracting executable wrapper to bring up the whole stack.
@@ -35,7 +35,8 @@ ros2 run my_awesome_package talker
 ros2 run my_awesome_package listener
 ```
 
-**You don't have follow the next steps to bundle your ROS project**, feel free to skip to [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
+> [!NOTE]
+> **You don't have follow the next steps to bundle your ROS project**, feel free to skip to [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
 Nix can also build the whole ros project as a Nix Package!
 ```bash
