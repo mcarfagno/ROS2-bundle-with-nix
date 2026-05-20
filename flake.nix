@@ -120,8 +120,13 @@
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
                 ros-base # or desktop, but check NixGL for GUI tools
-                rmw-zenoh-cpp
+                python-cmake-module
+                ament-cmake-core
+                rosidl-default-generators
+                ament-lint-auto
+                ament-lint-common
                 # ... other ROS packages from the overlay
+                rmw-zenoh-cpp
               ];
             })
           ];

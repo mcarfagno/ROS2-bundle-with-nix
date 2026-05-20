@@ -20,7 +20,7 @@ Enter the Jazzy development shell
 ```bash
 nix develop
 echo $RMW_IMPLEMENTATION
-colcon build # this will build in your LOCAL WORKSPACE != Nix
+colcon build --base-paths src # this will build in your LOCAL WORKSPACE != Nix
 ```
 
 Spin the zenoh router daemon:
