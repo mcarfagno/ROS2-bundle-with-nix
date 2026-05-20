@@ -1,7 +1,8 @@
 
 # ROS2 Bundle with Nix
 
-Highly recommended introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/) !
+Highly recommended introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), because I assume you have already nix installed in your machine.
+
 This contains an oversimplified workspace with:
 - A talker/listener package
 - A custom interfaces package
@@ -87,7 +88,6 @@ The resulting bundle `./ros-bundle-arx` can be run **standalone**.
 Copy it to your robot and run it:
 ```bash
 scp ros2-bundle-arx robot_user@192.168.1.100:~/
-
 ssh robot_user@192.168.1.100
 ./ros2-bundle-arx
 ```
