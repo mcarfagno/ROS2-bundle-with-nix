@@ -8,15 +8,19 @@ This repo contains an oversimplified workspace with:
 
 We will use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
 
-I highly recommend this introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), because I assume you already have Nix installed in your machine.
+## Intro
 
-> [!TIP]
-> Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't be able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), unless you fancy compiling everything from scratch.
+I highly recommend this introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), also I assume you already have Nix [installed](https://nix.dev/install-nix.html) in your machine and flakes enabled.
 
 The [flake](./flake.nix) is commented to help you follow along, it defines:
 - **default dev shell**: a hermetic terminal environment with all ROS 2 build tools and dependencies.
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
-- **ros2-bundle**: a portable, self-extracting executable wrapper to bring up the whole stack.
+- **ros2-bundle**: an executable wrapper to bring up the whole stack.
+
+In this repository, we will use this single configuration file to go from local hacking in a clean development environment to deploying your entire ROS 2 project as a standalone executable.
+
+> [!TIP]
+> Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't be able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), and you will end compiling everything from scratch.
 
 Mandatory thanks to [lopsided98/nix-ros-overlay](https://github.com/lopsided98/nix-ros-overlay), which is the project that actually provides everything required to make ROS 2 work flawlessly with Nix. The maintainers deserve all the praise for making this possible.
 
