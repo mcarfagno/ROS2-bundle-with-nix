@@ -1,17 +1,17 @@
 
 # ROS2 Bundle with Nix
 
-Highly recommended introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), because I assume you have already nix installed in your machine.
-
-> [!TIP]
-> Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), unless you fancy compiling everything from scratch.
-
-This contains an oversimplified workspace with:
+This repo contains an oversimplified workspace with:
 - A talker/listener package
 - A custom interfaces package
 - A bringup package
 
 We will use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
+
+I highly recommend this introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), because I assume you already have Nix installed in your machine.
+
+> [!TIP]
+> Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't be able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), unless you fancy compiling everything from scratch.
 
 The [flake](./flake.nix) is commented to help you follow along, it defines:
 - **default dev shell**: a hermetic terminal environment with all ROS 2 build tools and dependencies.
@@ -42,7 +42,7 @@ ros2 run my_awesome_package listener
 ```
 
 > [!NOTE]
-> **You don't have follow the next steps to bundle your ROS project**, feel free to skip to [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
+> **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
 Nix can also build the whole ros project as a Nix Package!
 ```bash
@@ -51,7 +51,7 @@ ls result # it will create a result directory that symlinks to the `nix/store`
 ./result/bin/ros2-bundle # you can actually run this and will launch the bringup
 ```
 
- Indeed that same executable is what is run with:
+Indeed that same executable is what is run with:
 ```bash
 nix run .#ros2-bundle
 ```
@@ -64,7 +64,7 @@ nix build .#ros2-workspace
 ```
 
 > [!WARNING]
-> Now don't try just coping this on your robot just yet! The result has the dependencies linked to the `/nix/store`!
+> Now don't try just copying this on your robot just yet! The result has the dependencies linked to the `/nix/store`!
 
 If your robot actually does have Nix installed, we can sync the packaged workspace and all its dependencies securely over SSH:
 ```bash
@@ -79,7 +79,7 @@ But let's not get sidetracked...
 ## Deploying the standalone to a robot
 
 > [!IMPORTANT]
-> the example flake does not include cross-compilation, so the resulting binary will only work with the same architecture as host machine! I will try expanding on that in another tutorial.
+> the example flake does not include cross-compilation, so the resulting binary will only work with the same architecture as host machine! I will expand on that in another tutorial.
 
 So, your robot's stack is bulletproof and you want to deploy it as a standalone executable because you don't want Nix (or ROS, or Docker) installed on your robot. Nix still has your back!
 
@@ -88,20 +88,20 @@ Compile a self-contained bundle on your workstation:
 nix bundle .#ros2-bundle
 ```
 
-The resulting bundle `./ros-bundle-arx` can be run **standalone**.
+This will create a [-arx]The resulting bundle `./ros2-bundle-arx` can be run **standalone**.
 
 Copy it to your robot and run it:
 ```bash
 scp ros2-bundle-arx robot_user@192.168.1.100:~/
 ssh robot_user@192.168.1.100
-./ros2-bundle-arx
+./ros2-bundle-arx # you may need sudo depending on AppArmor (e.g. ubuntu 24.04)
 ```
 
 One important detail: While the bundle contains all the software, it still executes using the host kernel's hardware layer. If your bringup needs to talk to a LiDAR via `/dev/ttyUSB0` ensure that the robot's OS is setup correctly.
 
 ## One more thing!
 
-You don't have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build.yml) can do it for you! Check out the Action artifacts!
+You don't have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build.yml)! Check out the Action artifacts!
 
 <figure>
   <img src="img/action.png" width="500" />
