@@ -26,12 +26,15 @@ You can use this single configuration file as a blueprint to go from local hacki
 Mandatory thanks to [lopsided98/nix-ros-overlay](https://github.com/lopsided98/nix-ros-overlay), which is the project that actually provides everything required to make ROS 2 work flawlessly with Nix. The maintainers deserve all the praise for making this possible.
 
 ## Local Development
+Nix perfectly supports your usual ROS development workflow. 
 
-Enter the Jazzy development shell
+The best part? Unlike jumping into a Docker container, the Nix dev shell doesn't strip away your local environment. It simply layers the ROS goodies (`colcon`, `ros2`, etc.) *directly on top* of your host machine. Your system's `git`, your customised `nvim`, and your preferred IDE are all still right there.
+
+Enter the Jazzy development shell:
 ```bash
 nix develop
 echo $RMW_IMPLEMENTATION
-colcon build --base-paths src # this will build in your LOCAL WORKSPACE as you are already familiar with.
+colcon build --base-paths src # This builds locally into your install/ and build/ directories
 ```
 
 Spin the zenoh router daemon:
@@ -49,25 +52,25 @@ ros2 run my_awesome_package listener
 > [!NOTE]
 > **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
-Nix can also build the whole ros project as a Nix Package!
+Nix can build the workspace as a package, giving you all the Nix benefits (this is not a deep dive BUT there are many). Maybe this works better for your workflow.
+```bash
+nix build .#ros2-workspace
+ls result # it will create a result directory that symlinks to the `nix/store`
+./result/bin/ros2 run rmw_zenoh_cpp rmw_zenohd
+./result/bin/ros2 run my_awesome_package talker
+```
+
+Probably it is better to have a single entry point script for your stack, and the ros2-bundle defined in the flake is a Nix package that does just that!
 ```bash
 nix build # defaults to ros2-bundle
-ls result # it will create a result directory that symlinks to the `nix/store`
 ./result/bin/ros2-bundle # you can actually run this and will launch the bringup
 ```
 
 Indeed that same executable is what is run with:
 ```bash
 nix run .#ros2-bundle
-```
 
-You can also just build the packaged workspace and run the commands manually, if this works better for your workflow
-```bash
-nix build .#ros2-workspace
-./result/bin/ros2 run rmw_zenoh_cpp rmw_zenohd
-./result/bin/ros2 run my_awesome_package talker
 ```
-
 > [!WARNING]
 > Now don't try just copying this on your robot just yet! The result has the dependencies linked to the `/nix/store`!
 
@@ -81,7 +84,7 @@ nix copy .#ros2-bundle --to ssh://nuc@192.168.1.X
 
 But let's not get sidetracked...
 
-## Deploying the standalone to a robot
+## Deploying your stack to a robot
 
 > [!IMPORTANT]
 > the example flake does not include cross-compilation, so the resulting binary will only work with the same architecture as host machine! I will expand on that in another tutorial.
