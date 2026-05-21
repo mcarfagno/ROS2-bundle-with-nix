@@ -9,6 +9,9 @@
   outputs = { self, nixpkgs, nix-ros-overlay }:
     nix-ros-overlay.inputs.flake-utils.lib.eachDefaultSystem (system:
       let
+        # release version of your ros project
+        releaseVersion = "1.0.1";
+
         pkgs = import nixpkgs {
           inherit system;
           overlays = [ nix-ros-overlay.overlays.default ];
@@ -77,7 +80,7 @@
           # the complied workspace wrapped with launch script
           ros2-bundle = pkgs.stdenv.mkDerivation {
             pname = "ros2-bundle";
-            version = "1.0.0"; # bump this wich each release
+            version = releaseVersion;
             phases = [ "installPhase" ];
             installPhase = ''
               mkdir -p $out/bin
@@ -97,6 +100,9 @@
               EOF
               chmod +x $out/bin/ros2-bundle
             '';
+            meta = {
+              mainProgram = "ros2-bundle"; # here we point to the script we created above.
+            };
           };
         };
 
