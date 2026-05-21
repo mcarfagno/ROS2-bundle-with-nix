@@ -1,12 +1,13 @@
-
 # ROS2 Bundle with Nix
+
+I am by no means a Nix expert, but I wanted a sane, repeatable way to build and deploy my robotics stack. Think of this repository as a documented template you can grab, pull apart, and start hacking on.
 
 This repo contains an oversimplified workspace with:
 - A talker/listener package
 - A custom interfaces package
 - A bringup package
 
-We will use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
+I use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
 
 ## Intro
 
@@ -17,7 +18,7 @@ The [flake](./flake.nix) is commented to help you follow along, it defines:
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
 - **ros2-bundle**: an executable wrapper to bring up the whole stack.
 
-In this repository, we will use this single configuration file to go from local hacking in a clean development environment to deploying your entire ROS 2 project as a standalone executable.
+You can use this single configuration file as a blueprint to go from local hacking in a clean development sandbox to bundling your entire ROS 2 project into a standalone executable.
 
 > [!TIP]
 > Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't be able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), and you will end compiling everything from scratch.
@@ -30,7 +31,7 @@ Enter the Jazzy development shell
 ```bash
 nix develop
 echo $RMW_IMPLEMENTATION
-colcon build --base-paths src # this will build in your LOCAL WORKSPACE != Nix
+colcon build --base-paths src # this will build in your LOCAL WORKSPACE as you are already familiar with.
 ```
 
 Spin the zenoh router daemon:
