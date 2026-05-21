@@ -43,6 +43,7 @@
           propagatedBuildInputs = [
             pkgs.rosPackages.jazzy.rclcpp
             my_awesome_interfaces
+            # pkgs.eigen for system libraries needed at compile time
           ];
         };
 
@@ -56,14 +57,21 @@
         };
 
         # The hermetic ROS 2 environment with CLI tools and our custom packages
-        rosWorkspace = pkgs.rosPackages.jazzy.buildEnv {
+        # note 'rosPackages.jazzy', this is to shorten ros pkgs names
+        rosWorkspace = with pkgs.rosPackages.jazzy; buildEnv {
           name = "ros2-workspace";
           paths = [
+            # ros2 packes built from ws
             my_awesome_interfaces
             my_awesome_package
             my_awesome_bringup
-            pkgs.rosPackages.jazzy.ros-core # bare minumum
-            pkgs.rosPackages.jazzy.rmw-zenoh-cpp # ;-)
+
+            # ros2 packages from the overlay
+            ros-core # bare minumum ros libraries
+            rmw-zenoh-cpp # ;-)
+
+            # runtime-only system libraries (e.g. for launchfiles)
+            # pkgs.can-utils # don't forget the pkgs. part if it's not from the overlay!
           ];
         };
 
@@ -122,10 +130,12 @@
           packages = [
             # generic dependecies from nixpkgs
             pkgs.colcon
+            pkgs.python3Packages.argcomplete
+
             # ... other non-ROS packages
             (with pkgs.rosPackages.jazzy; buildEnv {
               paths = [
-                ros-base # or desktop, but check NixGL for GUI tools
+                ros-base # desktop, but use nixGl for GUI tools!
                 python-cmake-module
                 ament-cmake-core
                 rosidl-default-generators
@@ -141,6 +151,8 @@
           # set any ENV you need
           shellHook = ''
             export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+            eval "$(register-python-argcomplete ros2)"
+            eval "$(register-python-argcomplete colcon)"
             echo "🚀 Welcome to the ROS 2 Jazzy Sandbox!"
             echo "You can now run 'colcon build' or 'ros2 pkg create' natively."
           '';
