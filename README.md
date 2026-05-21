@@ -93,7 +93,7 @@ Compile a self-contained bundle on your workstation:
 nix bundle .#ros2-bundle
 ```
 
-This will create a [-arx]The resulting bundle `./ros2-bundle-arx` can be run **standalone**.
+This will create a [ros2-bundle-arx] file. The resulting bundle `./ros2-bundle-arx` is a self-extracting archive that can be run **standalone**.
 
 Copy it to your robot and run it:
 ```bash
