@@ -6,11 +6,19 @@
     nix-ros-overlay.url = "github:lopsided98/nix-ros-overlay/master";
   };
 
-  outputs = { self, nixpkgs, nix-ros-overlay }:
-    nix-ros-overlay.inputs.flake-utils.lib.eachDefaultSystem (system:
+  outputs =
+    {
+      self,
+      nixpkgs,
+      nix-ros-overlay,
+    }:
+    nix-ros-overlay.inputs.flake-utils.lib.eachDefaultSystem (
+      system:
       let
         # release version of your ros project
         releaseVersion = "1.0.1";
+
+        rosPkgs = pkgs.rosPackages.jazzy;
 
         pkgs = import nixpkgs {
           inherit system;
@@ -22,43 +30,43 @@
         # - If you are unsure how to write these look here:
         #  - https://github.com/lopsided98/nix-ros-overlay/tree/master/distros/jazzy
         #  - https://github.com/wentasah/ros2nix/
-        my_awesome_interfaces = pkgs.rosPackages.jazzy.buildRosPackage {
+        my_awesome_interfaces = rosPkgs.buildRosPackage {
           pname = "my_awesome_interfaces";
           version = "1.0.0"; # keep it synced with package.xml !
           src = ./src/my_awesome_interfaces;
           buildType = "ament_cmake";
-          propagatedBuildInputs = [ pkgs.rosPackages.jazzy.rosidl-default-runtime ];
+          propagatedBuildInputs = [ rosPkgs.rosidl-default-runtime ];
           nativeBuildInputs = [
-            pkgs.rosPackages.jazzy.ament-cmake
-            pkgs.rosPackages.jazzy.rosidl-default-generators
+            rosPkgs.ament-cmake
+            rosPkgs.rosidl-default-generators
           ];
         };
 
-        my_awesome_package = pkgs.rosPackages.jazzy.buildRosPackage {
+        my_awesome_package = rosPkgs.buildRosPackage {
           pname = "my_awesome_package";
           version = "1.0.0";
           src = ./src/my_awesome_package;
           buildType = "ament_cmake";
-          nativeBuildInputs = [ pkgs.rosPackages.jazzy.ament-cmake ];
+          nativeBuildInputs = [ rosPkgs.ament-cmake ];
           propagatedBuildInputs = [
-            pkgs.rosPackages.jazzy.rclcpp
+            rosPkgs.rclcpp
             my_awesome_interfaces
             # pkgs.eigen for system libraries needed at compile time
           ];
         };
 
-        my_awesome_bringup = pkgs.rosPackages.jazzy.buildRosPackage {
+        my_awesome_bringup = rosPkgs.buildRosPackage {
           pname = "my_awesome_bringup";
           version = "1.0.0";
           src = ./src/my_awesome_bringup;
           buildType = "ament_cmake";
-          nativeBuildInputs = [ pkgs.rosPackages.jazzy.ament-cmake ];
+          nativeBuildInputs = [ rosPkgs.ament-cmake ];
           propagatedBuildInputs = [ my_awesome_package ];
         };
 
         # The hermetic ROS 2 environment with CLI tools and our custom packages
-        # note 'rosPackages.jazzy', this is to shorten ros pkgs names
-        rosWorkspace = with pkgs.rosPackages.jazzy; buildEnv {
+        # note 'rosPkgs', this is to shorten ros pkgs names
+        rosWorkspace = rosPkgs.buildEnv {
           name = "ros2-workspace";
           paths = [
             # ros2 packes built from ws
@@ -67,15 +75,16 @@
             my_awesome_bringup
 
             # ros2 packages from the overlay
-            ros-core # bare minumum ros libraries
-            rmw-zenoh-cpp # ;-)
+            rosPkgs.ros-core # bare minumum ros libraries
+            rosPkgs.rmw-zenoh-cpp # ;-)
 
             # runtime-only system libraries (e.g. for launchfiles)
             # pkgs.can-utils # don't forget the pkgs. part if it's not from the overlay!
           ];
         };
 
-      in {
+      in
+      {
 
         # --- PACKAGES (For nix bundle & nix build) ---
         packages = rec {
@@ -126,15 +135,15 @@
         devShells.default = pkgs.mkShell {
           name = "ros2-jazzy-dev";
 
-          # What is available in the shell 
+          # What is available in the shell
           packages = [
             # generic dependecies from nixpkgs
             pkgs.colcon
             pkgs.python3Packages.argcomplete
 
             # ... other non-ROS packages
-            (with pkgs.rosPackages.jazzy; buildEnv {
-              paths = [
+            (rosPkgs.buildEnv {
+              paths = with rosPkgs; [
                 ros-base # desktop, but use nixGl for GUI tools!
                 python-cmake-module
                 ament-cmake-core
@@ -148,7 +157,7 @@
           ];
 
           # This script runs the moment you enter the shell
-          # set any ENV you need
+          # set any ENV you need here
           shellHook = ''
             export RMW_IMPLEMENTATION=rmw_zenoh_cpp
             eval "$(register-python-argcomplete ros2)"
@@ -157,9 +166,12 @@
             echo "You can now run 'colcon build' or 'ros2 pkg create' natively."
           '';
         };
-      });
-      nixConfig = {
-        extra-substituters = [ "https://ros.cachix.org" ];
-        extra-trusted-public-keys = [ "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=" ];
-      };
+
+        formatter = pkgs.nixfmt-rfc-style;
+      }
+    );
+  nixConfig = {
+    extra-substituters = [ "https://ros.cachix.org" ];
+    extra-trusted-public-keys = [ "ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=" ];
+  };
 }
