@@ -107,6 +107,25 @@ ssh robot_user@192.168.1.100
 
 One important detail: While the bundle contains all the software, it still executes using the host kernel's hardware layer. If your bringup needs to talk to a LiDAR via `/dev/ttyUSB0` ensure that the robot's OS is setup correctly.
 
+## Sane ARM build
+
+```bash
+sudo pacman -S qemu-user-static
+sudo pacman -S qemu-user-static-binfmt
+# edit /etc/nix/nix.conf -> extra-platforms = aarch64-linux
+sudo systemctl restart nix-daemon
+nix bundle .#ros2-bundle --system aarch64-linux
+```
+
+Boom! The output binary can run native on Jetson!
+
+Likewise, you can still:
+```
+nix copy '.#packages.aarch64-linux.ros2-bundle' --to ssh://nuc@192.168.1.X
+```
+
+Note: `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_64 build. The explicit packages.aarch64-linux.ros2-bundle is the aarch64 one.
+
 ## One more thing!
 
 If you are not impressed so far with Nix, here one last trick.

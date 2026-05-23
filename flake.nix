@@ -17,17 +17,8 @@
       let
         releaseVersion = "1.0.1";
 
-        # packages:
-        # - one targeting host
-        # - one targeting ARM (so nix target rPI/Jetson)
         pkgs = import nixpkgs {
           inherit system;
-          overlays = [ nix-ros-overlay.overlays.default ];
-        };
-
-        pkgsCross = import nixpkgs {
-          localSystem = system;
-          crossSystem = "aarch64-linux";
           overlays = [ nix-ros-overlay.overlays.default ];
         };
 
@@ -52,6 +43,11 @@
               nativeBuildInputs = [
                 rosPkgs.ament-cmake
                 rosPkgs.rosidl-default-generators
+                pkgs.python3Packages.numpy
+              ];
+              # needed to fix build under QEMU aarch64 emulation
+              cmakeFlags = [
+                "-DPython3_NumPy_INCLUDE_DIR=${pkgs.python3Packages.numpy.coreIncludeDir}"
               ];
             };
 
@@ -124,38 +120,28 @@
             inherit rosWorkspace ros2-bundle;
           };
 
-        # Instantiate the workspaces
-        nativeEnv = makeRosWorkspace pkgs;
-        crossEnv = makeRosWorkspace pkgsCross;
+        env = makeRosWorkspace pkgs;
 
       in
       {
         # NIX PACKAGES (For nix bundle & nix build)
         packages = {
-          default = nativeEnv.ros2-bundle;
+          default = env.ros2-bundle;
 
-          # Native workspace & bundle (runs on your laptop) 
-          ros2-workspace = nativeEnv.rosWorkspace;
-          ros2-bundle = nativeEnv.ros2-bundle;
-
-          # Cross-compiled workspace & bundle (runs on ARM64 Jetson/rPi)
-          cross-ros2-workspace = crossEnv.rosWorkspace;
-          cross-ros2-bundle = crossEnv.ros2-bundle;
+          # Workspace & bundle (runs on your laptop or ARM64 via --system)
+          ros2-workspace = env.rosWorkspace;
+          ros2-bundle = env.ros2-bundle;
         };
 
         # --- APPS (For nix run) ---
         apps = {
           default = {
             type = "app";
-            program = "${nativeEnv.ros2-bundle}/bin/ros2-bundle";
+            program = "${env.ros2-bundle}/bin/ros2-bundle";
           };
           run-ros2-bundle = {
             type = "app";
-            program = "${nativeEnv.ros2-bundle}/bin/ros2-bundle";
-          };
-          run-ros2-bundle-cross = {
-            type = "app";
-            program = "${crossEnv.ros2-bundle}/bin/ros2-bundle";
+            program = "${env.ros2-bundle}/bin/ros2-bundle";
           };
         };
 
