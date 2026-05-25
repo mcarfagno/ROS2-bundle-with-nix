@@ -1,5 +1,5 @@
 {
-  description = "ROS 2 Local Bundle, DevShell, and ARM Cross-Compilation";
+  description = "My ROS 2 project with Nix";
 
   inputs = {
     nixpkgs.follows = "nix-ros-overlay/nixpkgs"; # IMPORTANT!!!
@@ -26,9 +26,9 @@
         makeRosWorkspace =
           pkgs:
           let
-            # ros distro
+            # This is the ros release this project is based upon.
             rosPkgs = pkgs.rosPackages.jazzy;
-            
+
             # These are recipes that tell Nix how to build the ros packages in the workspace:
             # - Nix replaces colcon build
             # - If you are unsure how to write these look here:
@@ -71,7 +71,7 @@
               nativeBuildInputs = [ rosPkgs.ament-cmake ];
               propagatedBuildInputs = [ my_awesome_package ];
             };
-            
+
             # The hermetic ROS 2 environment with compliled workspace
             rosWorkspace = rosPkgs.buildEnv {
               name = "ros2-workspace";
@@ -89,7 +89,7 @@
                 # pkgs.can-utils # don't forget the pkgs. part if it's not from the overlay!
               ];
             };
-            
+
             # defines a start script for the whole ros project
             ros2-bundle = pkgs.stdenv.mkDerivation {
               pname = "ros2-bundle";
@@ -153,7 +153,7 @@
           packages = [
             pkgs.colcon
             pkgs.python3Packages.argcomplete
-             # ... other non-ROS packages
+            # ... other non-ROS packages
             (pkgs.rosPackages.jazzy.buildEnv {
               paths = with pkgs.rosPackages.jazzy; [
                 ros-base # desktop, but use nixGl for GUI tools!
