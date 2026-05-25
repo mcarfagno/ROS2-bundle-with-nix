@@ -50,7 +50,7 @@ ros2 run my_awesome_package listener
 ```
 
 > [!NOTE]
-> **You don't have to follow the next steps to bundle yf you wish to deploy to say a Jetson or a rPI see [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
+> **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to  [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
 Nix can build the workspace as a package, giving you all the Nix benefits (this is not a deep dive BUT there are many). Maybe this works better for your workflow.
 ```bash
@@ -87,7 +87,7 @@ But let's not get sidetracked...
 ## Deploying your stack to a robot
 
 > [!IMPORTANT]
-> While Nix supports cross-compilation wich is not included in this flake, hence the resulting binary will only work with the same architecture as host machine! If you wish to deploy to say a Jetson or a rPI see [the next part](#sane-arm-build) for an easy workaround.
+> While Nix supports cross-compilation, that is not included in this flake. Hence the resulting binary will only work with the same architecture as host machine! But If you wish to deploy to say a Jetson or a rPI see [the next part](#sane-arm-build) for an easy workaround.
 
 So, your robot's stack is bulletproof and you want to deploy it as a standalone executable because you don't want Nix (or ROS, or Docker) installed on your robot. Nix still has your back!
 
@@ -109,7 +109,7 @@ One important detail: While the bundle contains all the software, it still execu
 
 ## Sane ARM build
 
-Cross-compiling for ARM (Jetson, Raspberry Pi, etc.) can be painful. An easy workflow id leveraging [QEMU](https://wiki.archlinux.org/title/QEMU) user-mode emulation to build `aarch64-linux` binaries directly on your `x86_64` workstation — no cross-compilation toolchain wrangling or rebuilding on the SBC required!
+Cross-compiling for ARM (Jetson, Raspberry Pi, etc.) can be painful. An easy workflow is leveraging [QEMU](https://wiki.archlinux.org/title/QEMU) user-mode emulation to build `aarch64-linux` binaries directly on your `x86_64` workstation, no cross-compilation toolchain wrangling or rebuilding on the SBC required!
 
 ```bash
 # check the correct pkgs for your distro
@@ -122,14 +122,14 @@ nix bundle .#ros2-bundle --system aarch64-linux
 
 Boom! The output binary can run native on your Jetson!
 
-Most of the ROS dependency tree comes pre-built from `ros.cachix.org`! Only your custom workspace packages (my_awesome_*) actually build under QEMU.
+Most of the ROS dependency tree comes pre-built from `ros.cachix.org`! Only your custom workspace packages (my_awesome_*) actually build under QEMU. And this saves the pain of compiling directly on the robot.
 
-Likewise, you can still:
+Likewise, if you prefer the Nix-managed way, you can still:
 ```bash
 nix copy '.#packages.aarch64-linux.ros2-bundle' --to ssh://nuc@192.168.1.X
 ```
 
-Note: `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_64 build. The explicit packages.aarch64-linux.ros2-bundle is the aarch64 one.
+Be mindful that `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_64 build. The explicit packages.aarch64-linux.ros2-bundle is the aarch64 one.
 
 ## One more thing!
 
