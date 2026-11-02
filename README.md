@@ -3,9 +3,9 @@
 I am by no means a Nix expert, but I wanted a sane, repeatable way to build and deploy my robotics stack. Think of this repository as a documented template you can grab, pull apart, and start hacking on.
 
 This repo contains an oversimplified workspace with:
-- A talker/listener package
-- A custom interfaces package
-- A bringup package
+- [my_awesome_package](./src/my_awesome_package/): a talker/listener package
+- [my_awesome_interfaces](./src/my_awesome_interfaces/): A custom interfaces package
+- [my_awesome_bringup](./src/my_awesome_bringup/): A bringup/integration package
 
 I use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
 
@@ -96,7 +96,7 @@ Compile a self-contained bundle on your workstation:
 nix bundle .#ros2-bundle
 ```
 
-This will create a [ros2-bundle-arx] file. The resulting bundle `./ros2-bundle-arx` is a self-extracting archive that can be run **standalone**.
+This will create a `ros2-bundle-arx` file. The resulting bundle `./ros2-bundle-arx` is a self-extracting archive that can be run **standalone**.
 
 Copy it to your robot and run it:
 ```bash
@@ -131,13 +131,43 @@ nix copy '.#packages.aarch64-linux.ros2-bundle' --to ssh://nuc@192.168.1.X
 
 Be mindful that `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_64 build. The explicit packages.aarch64-linux.ros2-bundle is the aarch64 one.
 
+## Jetson with jetpack-nixos
+
+What if you want to use the GPU on your Jetson? The [jetpack-nixos](https://github.com/anduril/jetpack-nixos) overlay gives us NVIDIA's CUDA for Jetson as plain Nix packages, so we can build a CUDA node right next to the rest of the workspace.
+
+The flake has a minimal example for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
+- [my_awesome_cuda](./src/my_awesome_cuda): a talker that does a vector addition on the GPU and publishes the result.
+- **ros2-bundle-jetson**: same as ros2-bundle, but it launches the CUDA talker with the usual listener.
+
+Build it with the same QEMU trick as above:
+```bash
+nix bundle .#ros2-bundle-jetson --system aarch64-linux
+```
+
+Copy it to your Jetson and run it:
+```bash
+scp ros2-bundle-jetson-arx robot_user@192.168.1.100:~/
+ssh robot_user@192.168.1.100
+./ros2-bundle-jetson-arx
+# [listener]: I heard: 'Nix is awesome on Orin, GPU sum 999000'
+```
+
+> [!NOTE]
+> The CUDA driver (`libcuda.so`) must match the robot's kernel, so the bundle doesn't ship it and uses the one from JetPack in `/usr/lib/aarch64-linux-gnu/nvidia` instead. Everything else (CUDA runtime, ROS, your nodes) is in the bundle.
+
+> [!TIP]
+> CUDA is unfree and not on the ROS cachix, but don't worry, the CUDA packages are just NVIDIA's prebuilt archives being unpacked. Only `my_awesome_cuda` is actually compiled.
+
+The `my_awesome_cuda` package has a `COLCON_IGNORE`, so `colcon build` in the dev shell skips it (no `nvcc` there), and Nix builds it just fine.
+
 ## One more thing!
 
 If you are not impressed so far with Nix, here one last trick.
 
 You don't even have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build.yml)!
 
-Check out this repo's [Action artifacts](https://github.com/mcarfagno/ROS2-bundle-with-nix/actions/runs/26124192819), you can download and run the bundled application yourself on your x86 Linux machine!
+Check out this repo's [Action artifacts](https://github.com/mcarfagno/ROS2-bundle-with-nix/actions/workflows/build.yml), you can download and run the bundled application yourself on your x86 Linux machine!
+There is an ARM one too (`ros2-bundle-aarch64`, built on a native ARM runner), which also runs on a Jetson, and a Jetson one with CUDA (`ros2-bundle-jetson-cuda`).
 <figure>
   <img src="img/action.png" width="500" />
 </figure>
