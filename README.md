@@ -14,7 +14,7 @@ I use Nix to build this workspace with Jazzy, and bundle the result as a standal
 I highly recommend this introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), also I assume you already have Nix [installed](https://nix.dev/install-nix.html) in your machine and flakes enabled.
 
 The [flake](./flake.nix) is commented to help you follow along, it defines:
-- **default dev shell**: a hermetic terminal environment with all ROS 2 build tools and dependencies.
+- **default dev shell**: an isolated terminal environment with all ROS 2 build tools and dependencies.
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
 - **ros2-bundle**: an executable wrapper to bring up the whole stack.
 
@@ -42,7 +42,7 @@ Spin the zenoh router daemon:
 ros2 run rmw_zenoh_cpp rmw_zenohd
 ```
 
-Run your awesome ros nodes:
+Run your awesome ros nodes (each in its own terminal, with `nix develop` in every one of them!):
 ```bash
 source install/setup.bash
 ros2 run my_awesome_package talker
@@ -50,7 +50,7 @@ ros2 run my_awesome_package listener
 ```
 
 > [!NOTE]
-> **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to  [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
+> **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to  [the next part](#deploying-your-stack-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
 Nix can build the workspace as a package, giving you all the Nix benefits (this is not a deep dive BUT there are many). Maybe this works better for your workflow.
 ```bash
@@ -120,7 +120,7 @@ sudo systemctl restart nix-daemon
 nix bundle .#ros2-bundle --system aarch64-linux
 ```
 
-Boom! The output binary can run native on your Jetson!
+Boom! The output binary can run native on your Jetson! And the bundled ros version does not care about your JetPack version!
 
 Most of the ROS dependency tree comes pre-built from `ros.cachix.org`! Only your custom workspace packages (my_awesome_*) actually build under QEMU. And this saves the pain of compiling directly on the robot.
 
