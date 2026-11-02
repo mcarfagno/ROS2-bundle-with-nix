@@ -135,9 +135,10 @@
         };
 
         # defines a start script for the whole ros project
+        # pname is needed because nix-bundle names its output "${pname}-arx"
         mkBundle =
           name: workspace: launchFile:
-          pkgs.writeShellScriptBin name ''
+          (pkgs.writeShellScriptBin name ''
             export ROS_DOMAIN_ID=''${ROS_DOMAIN_ID:-42}
             export RMW_IMPLEMENTATION=rmw_zenoh_cpp
             # Jetson only: libcuda.so must match the robot's kernel, so we use the one from JetPack
@@ -150,7 +151,10 @@
 
             # no exec here, or the trap above would never fire!
             ${workspace}/bin/ros2 launch ${launchFile}
-          '';
+          '')
+          // {
+            pname = name;
+          };
 
         ros2-bundle = mkBundle "ros2-bundle" rosWorkspace "my_awesome_bringup my_bringup.launch.py";
       in
