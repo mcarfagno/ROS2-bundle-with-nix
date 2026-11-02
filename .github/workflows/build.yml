@@ -3,7 +3,7 @@ on:
   push:
     tags:
       - '*'
-
+  workflow_dispatch: # manual "Run workflow" button in the Actions tab
 jobs:
   build-and-bundle:
     runs-on: ubuntu-latest
