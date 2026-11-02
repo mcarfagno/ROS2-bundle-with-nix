@@ -1,5 +1,30 @@
 {
   "nodes": {
+    "cuda-legacy": {
+      "inputs": {
+        "flake-parts": [
+          "jetpack-nixos",
+          "cuda-legacy"
+        ],
+        "nixpkgs": [
+          "jetpack-nixos",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1779836515,
+        "narHash": "sha256-X/AwJZeTjxetRM7JG2BXeffKa1PIg/uo8AP5TX/+kb0=",
+        "owner": "nixos-cuda",
+        "repo": "cuda-legacy",
+        "rev": "baf22622e1114bb36412e5cebe2303f302edb882",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos-cuda",
+        "repo": "cuda-legacy",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -18,17 +43,40 @@
         "type": "github"
       }
     },
+    "jetpack-nixos": {
+      "inputs": {
+        "cuda-legacy": "cuda-legacy",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1793150277,
+        "narHash": "sha256-BiGHn6cYXtDT2jFlAxYmfpEu5yIMtCFWpRiCI7wqyDo=",
+        "owner": "anduril",
+        "repo": "jetpack-nixos",
+        "rev": "7fde791978b0b476abda2a6fc9b96d813d39c640",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anduril",
+        "ref": "master",
+        "repo": "jetpack-nixos",
+        "type": "github"
+      }
+    },
     "nix-ros-overlay": {
       "inputs": {
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs"
+        "nixpkgs": "nixpkgs",
+        "rosdistro": "rosdistro"
       },
       "locked": {
-        "lastModified": 1775216071,
-        "narHash": "sha256-PrPW70Fh1uLx3JxNV/NLeXjUhgfrZmi7ac8LJOlS0q4=",
+        "lastModified": 1789758058,
+        "narHash": "sha256-c+AUIcYBXX/5oU2+xpVyg/UjsTTS/CJXIprnWKdy1mE=",
         "owner": "lopsided98",
         "repo": "nix-ros-overlay",
-        "rev": "197a2b55c4ed24f8b885a5b20b65f426fb6d57ca",
+        "rev": "814d97b0b7236c0834fc079effa55acabb269926",
         "type": "github"
       },
       "original": {
@@ -40,27 +88,44 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1759381078,
-        "narHash": "sha256-gTrEEp5gEspIcCOx9PD8kMaF1iEmfBcTbO0Jag2QhQs=",
+        "lastModified": 1785828668,
+        "narHash": "sha256-8fsyqeO+mJqvIzeO4xIpgJe/f7MTbbVTEC6RT6WSXNs=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "7df7ff7d8e00218376575f0acdcc5d66741351ee",
+        "rev": "e72e4f299401a3689d4b3d5fc6496b11db7064eb",
         "type": "github"
       },
       "original": {
-        "owner": "lopsided98",
-        "ref": "nix-ros",
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
         "repo": "nixpkgs",
         "type": "github"
       }
     },
     "root": {
       "inputs": {
+        "jetpack-nixos": "jetpack-nixos",
         "nix-ros-overlay": "nix-ros-overlay",
         "nixpkgs": [
           "nix-ros-overlay",
           "nixpkgs"
         ]
+      }
+    },
+    "rosdistro": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1789112009,
+        "narHash": "sha256-RzYgfUnQ6ABdcqnz8ziHY8e9j5E0MwyhYiyDSU3KrHU=",
+        "owner": "ros",
+        "repo": "rosdistro",
+        "rev": "984f1f74889ad6145b7808e876e64037e7681c31",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ros",
+        "repo": "rosdistro",
+        "type": "github"
       }
     },
     "systems": {
