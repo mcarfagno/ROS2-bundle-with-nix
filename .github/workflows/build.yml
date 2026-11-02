@@ -17,15 +17,15 @@ jobs:
           - { runner: ubuntu-24.04-arm, target: ros2-bundle-jetson, artifact: ros2-bundle-jetson-cuda }
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
-      - uses: cachix/cachix-action@v15
+      - uses: cachix/cachix-action@v17
         with:
           name: ros
       - run: |
           mkdir deploy_artifacts
           nix bundle .#${{ matrix.target }} -o deploy_artifacts/${{ matrix.artifact }}-arx
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.artifact }}
           path: deploy_artifacts/

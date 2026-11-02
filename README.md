@@ -3,9 +3,9 @@
 I am by no means a Nix expert, but I wanted a sane, repeatable way to build and deploy my robotics stack. Think of this repository as a documented template you can grab, pull apart, and start hacking on.
 
 This repo contains an oversimplified workspace with:
-- A talker/listener package
-- A custom interfaces package
-- A bringup package
+- [my_awesome_package](./src/my_awesome_package/): a talker/listener package
+- [my_awesome_interfaces](./src/my_awesome_interfaces/): A custom interfaces package
+- [my_awesome_bringup](./src/my_awesome_bringup/): A bringup/integration package
 
 I use Nix to build this workspace with Jazzy, and bundle the result as a standalone executable. I've added Zenoh as default RMW in the mix as extra complexity because why not.
 
@@ -14,7 +14,7 @@ I use Nix to build this workspace with Jazzy, and bundle the result as a standal
 I highly recommend this introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), also I assume you already have Nix [installed](https://nix.dev/install-nix.html) in your machine and flakes enabled.
 
 The [flake](./flake.nix) is commented to help you follow along, it defines:
-- **default dev shell**: a hermetic terminal environment with all ROS 2 build tools and dependencies.
+- **default dev shell**: an isolated terminal environment with all ROS 2 build tools and dependencies.
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
 - **ros2-bundle**: an executable wrapper to bring up the whole stack.
 
@@ -42,7 +42,7 @@ Spin the zenoh router daemon:
 ros2 run rmw_zenoh_cpp rmw_zenohd
 ```
 
-Run your awesome ros nodes:
+Run your awesome ros nodes (each in its own terminal, with `nix develop` in every one of them!):
 ```bash
 source install/setup.bash
 ros2 run my_awesome_package talker
@@ -50,7 +50,7 @@ ros2 run my_awesome_package listener
 ```
 
 > [!NOTE]
-> **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to  [the next part](#deploying-the-standalone-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
+> **You don't have to follow the next steps to bundle your ROS project**, feel free to skip to  [the next part](#deploying-your-stack-to-a-robot), just follow along if you are curious to dive deeper into managing the compiled workspace as a nix package.
 
 Nix can build the workspace as a package, giving you all the Nix benefits (this is not a deep dive BUT there are many). Maybe this works better for your workflow.
 ```bash
@@ -80,32 +80,7 @@ nix copy .#ros2-bundle --to ssh://nuc@192.168.1.X
 ```
 
 > [!TIP]
-> Why would you care about this in the first place? This is your gateway to instantaneous rollbacks, as any content change in `#ros2-bundle` creates a new unique hash in the nix store that you can track!
-
-But let's not get sidetracked...
-
-## Deploying your stack to a robot
-
-> [!IMPORTANT]
-> While Nix supports cross-compilation, that is not included in this flake. Hence the resulting binary will only work with the same architecture as host machine! But If you wish to deploy to say a Jetson or a rPI see [the next part](#sane-arm-build) for an easy workaround.
-
-So, your robot's stack is bulletproof and you want to deploy it as a standalone executable because you don't want Nix (or ROS, or Docker) installed on your robot. Nix still has your back!
-
-Compile a self-contained bundle on your workstation:
-```Bash
-nix bundle .#ros2-bundle
-```
-
-This will create a [ros2-bundle-arx] file. The resulting bundle `./ros2-bundle-arx` is a self-extracting archive that can be run **standalone**.
-
-Copy it to your robot and run it:
-```bash
-scp ros2-bundle-arx robot_user@192.168.1.100:~/
-ssh robot_user@192.168.1.100
-./ros2-bundle-arx # you may need sudo depending on AppArmor (e.g. ubuntu 24.04)
-```
-
-One important detail: While the bundle contains all the software, it still executes using the host kernel's hardware layer. If your bringup needs to talk to a LiDAR via `/dev/ttyUSB0` ensure that the robot's OS is setup correctly.
+> I am using the default arx archive but Nix supports multiple [bundlers](https://nix.dev/manual/nix/2.24/command-ref/new-cli/nix3-bundle#examples), you can export your ros stack as an AppImage for example.
 
 ## Sane ARM build
 
@@ -120,7 +95,7 @@ sudo systemctl restart nix-daemon
 nix bundle .#ros2-bundle --system aarch64-linux
 ```
 
-Boom! The output binary can run native on your Jetson!
+Boom! The output binary can run native on your Jetson! And the bundled ros version does not care about your JetPack version!
 
 Most of the ROS dependency tree comes pre-built from `ros.cachix.org`! Only your custom workspace packages (my_awesome_*) actually build under QEMU. And this saves the pain of compiling directly on the robot.
 
@@ -131,13 +106,44 @@ nix copy '.#packages.aarch64-linux.ros2-bundle' --to ssh://nuc@192.168.1.X
 
 Be mindful that `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_64 build. The explicit packages.aarch64-linux.ros2-bundle is the aarch64 one.
 
+## Jetson with jetpack-nixos
+
+What if you want to use the GPU on your Jetson? The [jetpack-nixos](https://github.com/anduril/jetpack-nixos) overlay gives us NVIDIA's CUDA for Jetson as plain Nix packages, so we can build a CUDA node right next to the rest of the workspace.
+
+The flake has a minimal example for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
+- [my_awesome_cuda](./src/my_awesome_cuda): a talker that does a vector addition on the GPU and publishes the result.
+- **ros2-bundle-jetson**: same as ros2-bundle, but it launches the CUDA talker with the usual listener.
+
+Build it with the same QEMU trick as above:
+```bash
+nix bundle .#ros2-bundle-jetson --system aarch64-linux
+```
+
+Copy it to your Jetson and run it:
+```bash
+scp ros2-bundle-jetson-arx robot_user@192.168.1.100:~/
+ssh robot_user@192.168.1.100
+./ros2-bundle-jetson-arx
+# [listener]: I heard: 'Nix is awesome on Orin, GPU sum 999000'
+```
+
+<figure>
+  <img src="./img/orin.jpg" width="600" />
+</figure>
+
+> [!NOTE]
+> The CUDA driver (`libcuda.so`) must match the robot's kernel, so the bundle doesn't ship it and uses the one from JetPack in `/usr/lib/aarch64-linux-gnu/nvidia` instead. Everything else (CUDA runtime, ROS, your nodes) is in the bundle.
+
+The `my_awesome_cuda` package has a `COLCON_IGNORE`, so `colcon build` in the dev shell skips it (no `nvcc` there), and Nix builds it just fine.
+
 ## One more thing!
 
 If you are not impressed so far with Nix, here one last trick.
 
 You don't even have to bundle this yourself, the CI can do it for you via [GH Actions](.github/workflows/build.yml)!
 
-Check out this repo's [Action artifacts](https://github.com/mcarfagno/ROS2-bundle-with-nix/actions/runs/26124192819), you can download and run the bundled application yourself on your x86 Linux machine!
+Check out this repo's [Action artifacts](https://github.com/mcarfagno/ROS2-bundle-with-nix/actions/workflows/build.yml), you can download and run the bundled application yourself on your x86 Linux machine!
+There is an ARM one too (`ros2-bundle-aarch64`, built on a native ARM runner), which also runs on a Jetson, and a Jetson one with CUDA (`ros2-bundle-jetson-cuda`).
 <figure>
   <img src="img/action.png" width="500" />
 </figure>
