@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-# Orin, must be set before project()
+# Orin (sm_87), keep in sync with cudaCapabilities in flake.nix, must be set before project()
 set(CMAKE_CUDA_ARCHITECTURES 87)
 set(CMAKE_CUDA_RUNTIME_LIBRARY Shared)
 
