@@ -26,7 +26,7 @@
           # so the ROS packages are still pulled from cachix!
           config = {
             allowUnfree = true; # CUDA is unfree
-            cudaCapabilities = [ "8.7" ]; # Jetson Orin
+            cudaCapabilities = [ "8.7" ]; # Jetson Orin, keep in sync with CMAKE_CUDA_ARCHITECTURES in my_awesome_cuda
           };
           overlays = [
             nix-ros-overlay.overlays.default
@@ -109,7 +109,7 @@
           ];
         };
 
-        # Everything that goes in the hermetic ROS 2 environment
+        # Everything that goes in the isolated ROS 2 environment
         wsPackages = [
           # ros2 packages built from ws
           my_awesome_interfaces
@@ -124,7 +124,7 @@
           # pkgs.can-utils # don't forget the pkgs. part if it's not from the overlay!
         ];
 
-        # The hermetic ROS 2 environments with compiled workspace
+        # The isolated ROS 2 environments with compiled workspace
         rosWorkspace = rosPkgs.buildEnv {
           name = "ros2-workspace";
           paths = wsPackages;
