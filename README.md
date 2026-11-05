@@ -13,7 +13,7 @@ I use Nix to build this workspace with Jazzy, and bundle the result as a standal
 
 I highly recommend this introductory read [ROS 2 with Nix](https://sgvd.ai/post/2026-03-25-ros2-with-nix/), also I assume you already have Nix [installed](https://nix.dev/install-nix.html) in your machine and flakes enabled.
 
-The [flake](./flake.nix) is commented to help you follow along, it defines:
+The [flake](./flake.nix) is commented to help you follow along. It starts from the same skeleton as the post above (inputs, dev shell, binary cache) and then grows to build and ship your workspace, it defines:
 - **default dev shell**: an isolated terminal environment with all ROS 2 build tools and dependencies.
 - **ros2-workspace**: the pre-compiled, raw ROS 2 environment.
 - **ros2-bundle**: an executable wrapper to bring up the whole stack.
@@ -143,7 +143,7 @@ Be mindful that `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_6
 
 By far the most common question when I chat about Nix and Jetsons is if Nix allows using the GPU, well [here is you answer](https://github.com/anduril/jetpack-nixos)!
 
-The flake has a minimal example intended for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
+The [jetson.nix](./jetson.nix) file (imported by the flake, so the main one stays easy to follow) has a minimal example intended for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
 - [my_awesome_cuda](./src/my_awesome_cuda): a talker that does a vector addition on the GPU and publishes the result.
 - **ros2-bundle-jetson**: same as ros2-bundle, but it launches the CUDA talker with the usual listener.
 
