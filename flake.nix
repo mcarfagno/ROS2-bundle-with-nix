@@ -135,25 +135,26 @@
         };
 
         # defines a start script for the whole ros project
-        # pname is needed because nix-bundle names its output "${pname}-arx"
         mkBundle =
           name: workspace: launchFile:
-          (pkgs.writeShellScriptBin name ''
-            export ROS_DOMAIN_ID=''${ROS_DOMAIN_ID:-42}
-            export RMW_IMPLEMENTATION=rmw_zenoh_cpp
-            # Jetson only: libcuda.so must match the robot's kernel, so we use the one from JetPack
-            export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/nvidia''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+          pkgs.writeShellApplication {
+            inherit name;
+            derivationArgs.pname = name; # nix bundle names its output "${pname}-arx"
+            runtimeInputs = [ workspace ]; # puts `ros2` on the PATH
+            runtimeEnv.RMW_IMPLEMENTATION = "rmw_zenoh_cpp";
+            text = ''
+              export ROS_DOMAIN_ID=''${ROS_DOMAIN_ID:-42}
+              # Jetson only: libcuda.so must match the robot's kernel, so we use the one from JetPack
+              export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/nvidia''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
 
-            echo "Launching Zenoh Router Daemon..."
-            ${workspace}/bin/ros2 run rmw_zenoh_cpp rmw_zenohd &
-            ROUTER_PID=$!
-            trap 'echo "Stopping Zenoh Router..."; kill $ROUTER_PID' EXIT
+              echo "Launching Zenoh Router Daemon..."
+              ros2 run rmw_zenoh_cpp rmw_zenohd &
+              ROUTER_PID=$!
+              trap 'echo "Stopping Zenoh Router..."; kill $ROUTER_PID' EXIT
 
-            # no exec here, or the trap above would never fire!
-            ${workspace}/bin/ros2 launch ${launchFile}
-          '')
-          // {
-            pname = name;
+              # no exec here, or the trap above would never fire!
+              ros2 launch ${launchFile}
+            '';
           };
 
         ros2-bundle = mkBundle "ros2-bundle" rosWorkspace "my_awesome_bringup my_bringup.launch.py";
@@ -176,7 +177,6 @@
         };
 
         # --- DEV SHELL (For nix develop) ---
-        # Note: We use `pkgs` (native) here, as shell tools run on your host!
         devShells.default = pkgs.mkShell {
           name = "ros2-jazzy-dev";
 

@@ -21,7 +21,13 @@ The [flake](./flake.nix) is commented to help you follow along, it defines:
 You can use this single configuration file as a blueprint to go from local hacking in a clean development sandbox to bundling your entire ROS 2 project into a standalone executable.
 
 > [!TIP]
-> Also make sure `trusted-users = root <YOUR_USERNAME> ` is in `/etc/nix/nix.conf` or you won't be able to pull cached ROS2 packages from [cachix](https://app.cachix.org/cache/ros), and you will end compiling everything from scratch.
+> Add the ROS [cachix](https://app.cachix.org/cache/ros) cache to `/etc/nix/nix.conf`, or you will end up compiling all of ROS from scratch:
+> ```
+> extra-substituters = https://ros.cachix.org
+> extra-trusted-public-keys = ros.cachix.org-1:dSyZxI8geDCJrwgvCOHDoAfOm5sV1wCPjBkKL+38Rvo=
+> ```
+> Then restart the daemon with `sudo systemctl restart nix-daemon`.
+> Avoid adding yourself to `trusted-users` just for this: a trusted user is effectively root on the Nix daemon.
 
 Mandatory thanks to [lopsided98/nix-ros-overlay](https://github.com/lopsided98/nix-ros-overlay), which is the project that actually provides everything required to make ROS 2 work flawlessly with Nix. The maintainers deserve all the praise for making this possible.
 
