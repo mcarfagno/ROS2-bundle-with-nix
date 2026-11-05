@@ -150,7 +150,7 @@
                 echo "Launching Zenoh Router Daemon..."
                 ros2 run rmw_zenoh_cpp rmw_zenohd &
                 ROUTER_PID=$!
-                trap 'echo "Stopping Zenoh Router..."; kill $ROUTER_PID' EXIT
+                trap 'echo "Stopping Zenoh Router..."; kill "$ROUTER_PID" 2>/dev/null || true' EXIT
 
                 ros2 launch my_awesome_bringup my_bringup.launch.py
               '';
