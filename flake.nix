@@ -145,7 +145,9 @@
             text = ''
               export ROS_DOMAIN_ID=''${ROS_DOMAIN_ID:-42}
               # Jetson only: libcuda.so must match the robot's kernel, so we use the one from JetPack
-              export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/nvidia''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+              if [ -d /usr/lib/aarch64-linux-gnu/nvidia ]; then
+                export LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/nvidia''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}
+              fi
 
               echo "Launching Zenoh Router Daemon..."
               ros2 run rmw_zenoh_cpp rmw_zenohd &
@@ -186,7 +188,7 @@
             # ... other non-ROS packages
             (rosPkgs.buildEnv {
               paths = with rosPkgs; [
-                ros-base # desktop, but use nixGl for GUI tools!
+                ros-base # headless! for GUI tools (rviz2) add desktop and use nixGL
                 python-cmake-module
                 ament-cmake-core
                 rosidl-default-generators
@@ -200,6 +202,7 @@
           # This script runs the moment you enter the shell
           shellHook = ''
             export RMW_IMPLEMENTATION=rmw_zenoh_cpp
+            export ROS_DOMAIN_ID=''${ROS_DOMAIN_ID:-42}
             eval "$(register-python-argcomplete ros2)"
             eval "$(register-python-argcomplete colcon)"
             echo "🚀 Welcome to the ROS 2 Jazzy Sandbox!"
