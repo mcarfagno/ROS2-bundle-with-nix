@@ -88,6 +88,33 @@ nix copy .#ros2-bundle --to ssh://nuc@192.168.1.X
 > [!TIP]
 > I am using the default arx archive but Nix supports multiple [bundlers](https://nix.dev/manual/nix/2.24/command-ref/new-cli/nix3-bundle#examples), you can export your ros stack as an AppImage for example.
 
+Why would you care about this in the first place? This is your gateway to instantaneous rollbacks, as any content change in `#ros2-bundle` creates a new unique hash in the nix store that you can track!
+
+But let's not get sidetracked...
+
+## Deploying your stack to a robot
+
+> [!IMPORTANT]
+> While Nix supports cross-compilation, that is not included in this flake. Hence the resulting binary will only work with the same architecture as host machine! But If you wish to deploy to say a Jetson or a rPI see [the next part](#sane-arm-build) for an easy workaround.
+
+So, your robot's stack is bulletproof and you want to deploy it as a standalone executable because you don't want Nix (or ROS, or Docker) installed on your robot. Nix still has your back!
+
+Compile a self-contained bundle on your workstation:
+```Bash
+nix bundle .#ros2-bundle
+```
+
+This will create a [ros2-bundle-arx] file. The resulting bundle `./ros2-bundle-arx` is a self-extracting archive that can be run **standalone**.
+
+Copy it to your robot and run it:
+```bash
+scp ros2-bundle-arx robot_user@192.168.1.100:~/
+ssh robot_user@192.168.1.100
+./ros2-bundle-arx # you may need sudo depending on AppArmor (e.g. ubuntu 24.04)
+```
+
+One important detail: While the bundle contains all the software, it still executes using the host kernel's hardware layer. If your bringup needs to talk to a LiDAR via `/dev/ttyUSB0` ensure that the robot's OS is setup correctly.
+
 ## Sane ARM build
 
 Cross-compiling for ARM (Jetson, Raspberry Pi, etc.) can be painful. An easy workflow is leveraging [QEMU](https://wiki.archlinux.org/title/QEMU) user-mode emulation to build `aarch64-linux` binaries directly on your `x86_64` workstation, no cross-compilation toolchain wrangling or rebuilding on the SBC required!
