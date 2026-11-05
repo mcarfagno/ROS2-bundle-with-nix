@@ -128,7 +128,7 @@ sudo systemctl restart nix-daemon
 nix bundle .#ros2-bundle --system aarch64-linux
 ```
 
-Boom! The output binary can run native on your Jetson! And the bundled ros version does not care about your JetPack version!
+Boom! The output binary can run native on your Jetson! And the bundled ros version does not care about your JetPack version! (CUDA is another story, keep reading)
 
 Most of the ROS dependency tree comes pre-built from `ros.cachix.org`! Only your custom workspace packages (my_awesome_*) actually build under QEMU. And this saves the pain of compiling directly on the robot.
 
@@ -141,25 +141,26 @@ Be mindful that `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_6
 
 ## Jetson with jetpack-nixos
 
-What if you want to use the GPU on your Jetson? The [jetpack-nixos](https://github.com/anduril/jetpack-nixos) overlay gives us NVIDIA's CUDA for Jetson as plain Nix packages, so we can build a CUDA node right next to the rest of the workspace.
+By far the most common question when I chat about Nix and Jetsons is if Nix allows using the GPU, well [here is you answer](https://github.com/anduril/jetpack-nixos)!
 
-The flake has a minimal example for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
+The flake has a minimal example intended for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
 - [my_awesome_cuda](./src/my_awesome_cuda): a talker that does a vector addition on the GPU and publishes the result.
 - **ros2-bundle-jetson**: same as ros2-bundle, but it launches the CUDA talker with the usual listener.
 
-Build it with the same QEMU trick as above:
+You can build this with the same QEMU trick, albeit I don't fully recommend it, see the next section.
 ```bash
 nix bundle .#ros2-bundle-jetson --system aarch64-linux
 ```
 
 Copy it to your Jetson and run it:
 ```bash
-scp ros2-bundle-jetson-arx robot_user@192.168.1.100:~/
+scp ros2-bundle-jetson robot_user@192.168.1.100:~/
 ssh robot_user@192.168.1.100
-./ros2-bundle-jetson-arx
+./ros2-bundle-jetson
 # [listener]: I heard: 'Nix is awesome on Orin, GPU sum 999000'
 ```
 
+Here is the bundle running on a Orin AGX devkit (kernel 5.15):
 <figure>
   <img src="./img/orin.jpg" width="600" />
 </figure>
