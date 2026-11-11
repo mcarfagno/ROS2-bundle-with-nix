@@ -141,7 +141,7 @@ Be mindful that `.#ros2-bundle` on your x86_64 dev machine resolves to the x86_6
 
 ## Jetson with jetpack-nixos
 
-By far the most common question when I chat about Nix and Jetsons is if Nix allows using the GPU, well [here is you answer](https://github.com/anduril/jetpack-nixos)!
+By far the most common question when I chat about Nix and Jetsons is if Nix allows using the GPU, well [here is your answer](https://github.com/anduril/jetpack-nixos)!
 
 The [jetson.nix](./jetson.nix) file (imported by the flake, so the main one stays easy to follow) has a minimal example intended for a Jetson Orin running the stock Ubuntu JetPack 6 (again, no nix/NixOS on the robot required!):
 - [my_awesome_cuda](./src/my_awesome_cuda): a talker that does a vector addition on the GPU and publishes the result.
@@ -154,16 +154,11 @@ nix bundle .#ros2-bundle-jetson --system aarch64-linux
 
 Copy it to your Jetson and run it:
 ```bash
-scp ros2-bundle-jetson robot_user@192.168.1.100:~/
+scp ros2-bundle-jetson-arx robot_user@192.168.1.100:~/
 ssh robot_user@192.168.1.100
-./ros2-bundle-jetson
+./ros2-bundle-jetson-arx
 # [listener]: I heard: 'Nix is awesome on Orin, GPU sum 999000'
 ```
-
-Here is the bundle running on a Orin AGX devkit (kernel 5.15):
-<figure>
-  <img src="./img/orin.jpg" width="600" />
-</figure>
 
 > [!NOTE]
 > The CUDA driver (`libcuda.so`) must match the robot's kernel, so the bundle doesn't ship it and uses the one from JetPack in `/usr/lib/aarch64-linux-gnu/nvidia` instead. Everything else (CUDA runtime, ROS, your nodes) is in the bundle.

@@ -26,7 +26,7 @@ let
 
   rosPkgs = pkgs.rosPackages.jazzy;
 
-  # A CUDA talker for the Jetson, the CUDA bits come from the jetpack-nixos overlay
+  # A CUDA talker for the Jetson, jetpack-nixos + cudaCapabilities 8.7 select the Jetson CUDA 12.6 builds
   # backendStdenv: a gcc that nvcc accepts, but linked to the same libstdc++ as ROS
   my_awesome_cuda = (rosPkgs.buildRosPackage.override { stdenv = pkgs.cudaPackages.backendStdenv; }) {
     pname = "my_awesome_cuda";
@@ -51,6 +51,7 @@ let
   };
 
   # Same workspace as in flake.nix, plus the CUDA talker
+  # wsPackages are built with the flake.nix pkgs, fine as long as none of them depend on CUDA
   rosWorkspaceJetson = rosPkgs.buildEnv {
     name = "ros2-workspace-jetson";
     paths = wsPackages ++ [ my_awesome_cuda ];

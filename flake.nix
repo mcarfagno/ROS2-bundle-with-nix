@@ -1,5 +1,5 @@
 # New to Nix + ROS 2? Read https://sgvd.ai/post/2026-03-25-ros2-with-nix/ first!
-# The first half of this file (inputs, pkgs, devShells, nixConfig) is that exact flake,
+# The dev shell part (inputs, pkgs, devShells, nixConfig) is the flake from that post plus the jetpack-nixos input,
 # the rest is what I added to build the workspace as a package and bundle it.
 {
   description = "My ROS 2 project with Nix";
@@ -177,7 +177,7 @@
                 ;
             }
           );
-        # End jetson Orin work
+
         formatter = pkgs.nixfmt;
       }
     );
