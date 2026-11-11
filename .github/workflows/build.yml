@@ -5,28 +5,26 @@ on:
       - '*'
   workflow_dispatch: # manual "Run workflow" button in the Actions tab
 jobs:
-  build-and-bundle:
-    runs-on: ubuntu-latest
+  bundle:
+    strategy:
+      fail-fast: false # one failing target shouldn't cancel the other
+      matrix:
+        include:
+          - { runner: ubuntu-latest, target: ros2-bundle, artifact: ros2-bundle-x86_64 }
+          # ARM runners are native aarch64, no QEMU needed
+          - { runner: ubuntu-24.04-arm, target: ros2-bundle, artifact: ros2-bundle-aarch64 }
+          - { runner: ubuntu-24.04-arm, target: ros2-bundle-jetson, artifact: ros2-bundle-jetson-cuda }
+    runs-on: ${{ matrix.runner }}
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@v25
-
-      - name: Use ROS Cache
-        uses: cachix/cachix-action@v15
+      - uses: actions/checkout@v7
+      - uses: cachix/install-nix-action@v31
+      - uses: cachix/cachix-action@v17
         with:
           name: ros
-
-      - name: Create Artifact Directory
-        run: mkdir deploy_artifacts
-
-      - name: Bundle ROS2 Worksace
-        run: nix bundle .#ros2-bundle -o deploy_artifacts/ros2-bundle-arx
-
-      - name: Upload Binaries
-        uses: actions/upload-artifact@v4
+      - run: |
+          mkdir deploy_artifacts
+          nix bundle .#${{ matrix.target }} -o deploy_artifacts/${{ matrix.artifact }}-arx
+      - uses: actions/upload-artifact@v7
         with:
-          name: ros2-fleet-bundles
+          name: ${{ matrix.artifact }}
           path: deploy_artifacts/
